@@ -1,2 +1,3 @@
 # MultilingualLagClassification
-。。
+kaggle c
+c
