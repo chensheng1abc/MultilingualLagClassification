@@ -1,3 +1,2 @@
 # MultilingualLagClassification
-kaggle c
-c
+kaggle team
