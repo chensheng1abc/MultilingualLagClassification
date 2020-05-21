@@ -534,7 +534,8 @@ class TPUFitter:
 
     def run_inference(self, test_loader):
         print('run_inference\n')
-	node_count = len(glob('node-ckpts/*.bin'))
+        node_count = len(glob('node-ckpts/*.bin'))
+        print(f'load model from ./node-ckpts/best_model{node_count-1}.bin')
         self.model.load_state_dict(torch.load(f'./node-ckpts/best_model{node_count-1}.bin'))
         self.model.eval()
         result = {'id': [], 'toxic': []}
