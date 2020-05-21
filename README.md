@@ -1,2 +1,2 @@
 # MultilingualLagClassification
-kaggle team
+大家可在此交流代码细节
