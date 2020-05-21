@@ -31,7 +31,7 @@ SEED = 42
 MAX_LENGTH = 224
 
 ROOT_PATH = os.path.realpath(__file__ + '/..')
-BACKBONE_PATH = f'{ROOT_PATH}/xlm-roberta-base'
+BACKBONE_PATH = f'{ROOT_PATH}/xlm-roberta-large'
 
 
 
@@ -423,7 +423,7 @@ class TPUFitter:
         self.config = config
         self.epoch = 0
         node_count = len(glob('logs/*.txt'))
-        self.log_path = f'log{node_count}.txt'
+        self.log_path = f'logs/log{node_count}.txt'
         self.final_scores = RocAucMeter()
         self.model = model
         self.device = device
@@ -438,7 +438,7 @@ class TPUFitter:
         self.optimizer = AdamW(optimizer_grouped_parameters, lr=config.lr)
         self.scheduler = config.SchedulerClass(self.optimizer, **config.scheduler_params)
 
-    def fit(self, train_loader, validation_loader):
+    def fit(self, train_loader, validation_loader,test_loader):
         for e in range(self.config.n_epochs):
             print(f'Epoch:{e+1}/{self.config.n_epochs}')
             if self.config.verbose:
@@ -466,6 +466,7 @@ class TPUFitter:
                 self.best_score = final_scores.avg
                 node_count = len(glob('node-ckpts/*.bin'))
                 self.save(f'node-ckpts/best_model{node_count}.bin')
+                self.run_inference(test_loader=test_loader)
             else:
                 self.log(f'flnal_score did not improved from {self.best_score}')
 
@@ -565,8 +566,8 @@ net = XLMRobertaForSequenceClassification.from_pretrained(BACKBONE_PATH)
 
 class TrainGlobalConfig:
     num_workers = 0
-    batch_size = 32
-    n_epochs = 8
+    batch_size = 7
+    n_epochs = 3
     lr = 2e-5
 
     # -------------------
@@ -644,10 +645,10 @@ def _mp_fn(rank):
         time.sleep(1)
 
     fitter = TPUFitter(model=net, device=device, config=TrainGlobalConfig)
-    fitter.fit(train_loader, validation_loader)
+    fitter.fit(train_loader, validation_loader,test_loader)
     # fitter.run_tuning_and_inference(test_loader, validation_tune_loader)
     # fitter.save(f'model.bin')
-    fitter.run_inference(test_loader)
+    #fitter.run_inference(test_loader)
 
 _mp_fn(rank=1)
 
